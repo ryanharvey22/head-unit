@@ -52,9 +52,9 @@ void main(void)
     GPFSEL4 = sel;                  /* write back to hardware            */
 
     for (;;) {
-        GPSET1 = ACT_BIT;      /* LED on  */
-        delay(2000000);
-        GPCLR1 = ACT_BIT;      /* LED off */
-        delay(2000000);
+        GPCLR1 = ACT_BIT;      /* LED on  (active-low on Pi 4B) */
+        delay(150000000);
+        GPSET1 = ACT_BIT;      /* LED off */
+        delay(150000000);
     }
 }
