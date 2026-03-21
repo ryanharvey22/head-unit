@@ -1,2 +1,3 @@
 arm_64bit=1
 kernel=kernel8.img
+disable_splash=1
