@@ -7,7 +7,7 @@ CFLAGS  = -ffreestanding -nostdlib -nostartfiles -Wall -Wextra -O2
 ASFLAGS = -ffreestanding -nostdlib
 
 TARGET  = kernel8
-OBJS    = boot.o main.o
+OBJS    = boot.o mailbox.o main.o
 
 all: $(TARGET).img
 
