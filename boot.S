@@ -1,39 +1,54 @@
 /*
- * boot.S — ARM64 bare-metal entry point for Raspberry Pi 4
+ * boot.S — Minimal LED blink, pure assembly, no C runtime
  *
- * The GPU loads kernel8.img to 0x80000 and begins execution here.
- * We park cores 1-3, set up a stack for core 0, zero BSS, then
- * branch to main().
+ * If this doesn't blink, the kernel isn't loading.
  */
 
 .section .text.boot
 .global _start
 
 _start:
-    /* ---- Park non-primary cores ---- */
+    /* Only run on core 0 */
     mrs     x0, mpidr_el1
     and     x0, x0, #3
-    cbz     x0, .Lcore0
+    cbnz    x0, park
 
-.Lpark:
+    /* Load GPIO base address: 0xFE200000 */
+    movz    x0, #0xFE20, lsl #16
+
+    /* Read GPFSEL4 (offset 0x10) */
+    ldr     w1, [x0, #0x10]
+
+    /* Clear bits [8:6] for GPIO 42 */
+    movz    w2, #0x1C0
+    bic     w1, w1, w2
+
+    /* Set bits [8:6] = 001 (output) */
+    orr     w1, w1, #0x40
+    str     w1, [x0, #0x10]
+
+    /* w3 = ACT_BIT = 1 << 10 */
+    movz    w3, #0x400
+
+blink:
+    /* GPSET1 (offset 0x20) — drive high */
+    str     w3, [x0, #0x20]
+
+    /* Delay */
+    movz    x4, #0x200, lsl #16
+1:  subs    x4, x4, #1
+    bne     1b
+
+    /* GPCLR1 (offset 0x2C) — drive low */
+    str     w3, [x0, #0x2C]
+
+    /* Delay */
+    movz    x4, #0x200, lsl #16
+1:  subs    x4, x4, #1
+    bne     1b
+
+    b       blink
+
+park:
     wfe
-    b       .Lpark
-
-.Lcore0:
-    /* ---- Stack grows downward from _start (0x80000) ---- */
-    ldr     x0, =_start
-    mov     sp, x0
-
-    /* ---- Zero .bss ---- */
-    ldr     x0, =__bss_start
-    ldr     x1, =__bss_end
-
-.Lbss:
-    cmp     x0, x1
-    b.ge    .Lmain
-    str     xzr, [x0], #8
-    b       .Lbss
-
-.Lmain:
-    bl      main
-    b       .Lpark
+    b       park
