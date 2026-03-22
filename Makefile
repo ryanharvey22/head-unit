@@ -3,16 +3,25 @@ CC       = $(CROSS)gcc
 LD       = $(CROSS)ld
 OBJCOPY  = $(CROSS)objcopy
 
+CFLAGS  = -ffreestanding -nostdlib -nostartfiles -Wall -Wextra -O2
 ASFLAGS = -ffreestanding -nostdlib
+
 TARGET  = kernel8
+OBJS    = boot.o mailbox.o main.o
 
 all: $(TARGET).img
 
 boot.o: boot.S
 	$(CC) $(ASFLAGS) -c $< -o $@
 
-$(TARGET).elf: boot.o linker.ld
-	$(LD) -T linker.ld -o $@ boot.o
+mailbox.o: mailbox.c mailbox.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+main.o: main.c mailbox.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(TARGET).elf: $(OBJS) linker.ld
+	$(LD) -T linker.ld -o $@ $(OBJS)
 
 $(TARGET).img: $(TARGET).elf
 	$(OBJCOPY) -O binary $< $@

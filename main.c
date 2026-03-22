@@ -1,35 +1,68 @@
 /*
- * main.c — Boot test for Raspberry Pi 4 bare-metal
+ * main.c — Boot diagnostic for Raspberry Pi bare-metal
  *
- * Two tests in one:
- *   1. Fills the HDMI screen with cyan (proves code is running)
- *   2. Toggles GPIO 42 both ways (covers active-high and active-low)
+ * Auto-detects Pi 3 vs Pi 4 by reading the ARM CPU ID register.
+ * Tests HDMI output (cyan screen) and LED blink simultaneously.
  */
 
 #include <stdint.h>
 #include "mailbox.h"
 
-/* ---- BCM2711 GPIO registers ---- */
+/* ---- CPU detection ---- */
 
-#define MMIO_BASE   0xFE000000
-#define GPIO_BASE   (MMIO_BASE + 0x200000)
+static uint32_t gpio_base;
+static volatile uint32_t *gpset;
+static volatile uint32_t *gpclr;
+static uint32_t act_bit;
 
-#define GPFSEL4     (*(volatile uint32_t *)(GPIO_BASE + 0x10))
-#define GPSET1      (*(volatile uint32_t *)(GPIO_BASE + 0x20))
-#define GPCLR1      (*(volatile uint32_t *)(GPIO_BASE + 0x2C))
+static inline uint32_t read_midr(void)
+{
+    uint64_t val;
+    asm volatile ("mrs %0, midr_el1" : "=r"(val));
+    return (uint32_t)((val >> 4) & 0xFFF);
+}
 
-#define ACT_BIT     (1u << 10)
+static void led_init(void)
+{
+    uint32_t part = read_midr();
 
-/* ---- Framebuffer state ---- */
+    if (part == 0xD08) {
+        /* Pi 4 — Cortex-A72, peripherals at 0xFE000000 */
+        gpio_base = 0xFE200000;
+        volatile uint32_t *gpfsel4 = (volatile uint32_t *)(unsigned long)(gpio_base + 0x10);
+        uint32_t sel = *gpfsel4;
+        sel &= ~(7u << 6);
+        sel |=  (1u << 6);
+        *gpfsel4 = sel;
+        gpset = (volatile uint32_t *)(unsigned long)(gpio_base + 0x20);  /* GPSET1 */
+        gpclr = (volatile uint32_t *)(unsigned long)(gpio_base + 0x2C);  /* GPCLR1 */
+        act_bit = (1u << 10);  /* GPIO 42 */
+    } else {
+        /* Pi 3 — Cortex-A53, peripherals at 0x3F000000 */
+        gpio_base = 0x3F200000;
+        volatile uint32_t *gpfsel2 = (volatile uint32_t *)(unsigned long)(gpio_base + 0x08);
+        uint32_t sel = *gpfsel2;
+        sel &= ~(7u << 27);
+        sel |=  (1u << 27);
+        *gpfsel2 = sel;
+        gpset = (volatile uint32_t *)(unsigned long)(gpio_base + 0x1C);  /* GPSET0 */
+        gpclr = (volatile uint32_t *)(unsigned long)(gpio_base + 0x28);  /* GPCLR0 */
+        act_bit = (1u << 29);  /* GPIO 29 */
+    }
+}
 
-static uint32_t *framebuffer;
-static uint32_t  fb_pitch;
+/* ---- Delay ---- */
 
 static void delay(uint32_t count)
 {
     while (count--)
         asm volatile ("nop");
 }
+
+/* ---- Framebuffer ---- */
+
+static uint32_t *framebuffer;
+static uint32_t  fb_pitch;
 
 static int fb_init(uint32_t width, uint32_t height)
 {
@@ -83,25 +116,27 @@ static int fb_init(uint32_t width, uint32_t height)
 
 void main(void)
 {
-    /* Set up GPIO 42 as output */
-    uint32_t sel = GPFSEL4;
-    sel &= ~(7u << 6);
-    sel |=  (1u << 6);
-    GPFSEL4 = sel;
+    /* Set up LED for correct Pi model */
+    led_init();
 
-    /* Try framebuffer — fill screen cyan if it works */
-    if (fb_init(1280, 720)) {
+    /* Turn LED on immediately as proof we got this far */
+    *gpclr = act_bit;    /* try active-low */
+    *gpset = act_bit;    /* try active-high */
+
+    /* Try HDMI — if this works, you'll see cyan */
+    int have_fb = fb_init(1280, 720);
+    if (have_fb) {
         uint32_t stride = fb_pitch / 4;
         for (uint32_t y = 0; y < 720; y++)
             for (uint32_t x = 0; x < 1280; x++)
                 framebuffer[y * stride + x] = 0xFF00D2FF;
     }
 
-    /* Blink LED regardless — try both polarities */
+    /* Blink LED forever */
     for (;;) {
-        GPSET1 = ACT_BIT;
-        delay(150000000);
-        GPCLR1 = ACT_BIT;
-        delay(150000000);
+        *gpset = act_bit;
+        delay(200000000);
+        *gpclr = act_bit;
+        delay(200000000);
     }
 }
