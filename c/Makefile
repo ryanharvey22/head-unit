@@ -7,17 +7,14 @@ CFLAGS  = -ffreestanding -nostdlib -nostartfiles -Wall -Wextra -O2
 ASFLAGS = -ffreestanding -nostdlib
 
 TARGET  = kernel8
-OBJS    = boot.o mailbox.o main.o
+OBJS    = boot.o main.o
 
 all: $(TARGET).img
 
 boot.o: boot.S
 	$(CC) $(ASFLAGS) -c $< -o $@
 
-mailbox.o: mailbox.c mailbox.h
-	$(CC) $(CFLAGS) -c $< -o $@
-
-main.o: main.c mailbox.h
+main.o: main.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(TARGET).elf: $(OBJS) linker.ld
