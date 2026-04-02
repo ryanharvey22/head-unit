@@ -1,5 +1,6 @@
-CROSS   ?= aarch64-none-elf-
-CC       = $(CROSS)gcc
+CROSS   ?= aarch64-linux-gnu-
+GCCVER  ?= -12
+CC       = $(CROSS)gcc$(GCCVER)
 LD       = $(CROSS)ld
 OBJCOPY  = $(CROSS)objcopy
 
