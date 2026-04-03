@@ -1,5 +1,4 @@
 *.o
+*.ali
 *.elf
 *.img
-*.ali
-/tools/
