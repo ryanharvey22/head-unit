@@ -1,9 +1,8 @@
 # HARDWARE.md — Bill of Materials and Wiring Plan
 
 This is the complete parts list for the bare-metal Ada head unit, scoped to
-a 1996-97 Lexus LX 450. Each section maps to a future driver in `hal_pi/`,
-so you can implement and test peripherals one at a time without buying
-everything up front.
+a 1996-97 Lexus LX 450. Each section maps to a future firmware driver under
+`src/` (you add specs and bodies as you implement peripherals).
 
 ---
 
@@ -28,9 +27,9 @@ speed, coolant temp, MAF, throttle position, etc.) as a modern CAN car.
 Only the physical layer differs.
 
 **Future-proofing.** When you eventually swap to a CAN-equipped car (any US
-vehicle 2008+), the `Hal.CANBus` spec doesn't change — only the body in
-`hal_pi/` is replaced. The K-line transceiver gets swapped for an MCP2515
-CAN controller module. Your application code is untouched.
+vehicle 2008+), you can keep the same application-facing diagnostic API and
+swap only the low-level driver in `src/`. The K-line transceiver gets
+swapped for an MCP2515 CAN controller module.
 
 ---
 
@@ -198,8 +197,9 @@ The driver flow on bare metal:
 3. Send standard PID requests: `0x68 0x6A 0xF1 0x01 <PID> <checksum>`
 4. Parse response
 
-This goes in `hal_pi/hal-canbus.adb` (or a new `hal-kline.adb` if we
-decide K-line deserves its own HAL spec separate from CAN).
+This layer belongs in a dedicated driver module under `src/` once you
+define the HAL boundary (K-line may deserve its own package separate from a
+future CAN stack).
 
 ### Direct-sensor fallback *(documented but not v1)*
 
@@ -229,8 +229,8 @@ When you upgrade to any 2008+ car:
 |---|---|---|
 | MCP2515 + TJA1050 module | "MCP2515 CAN bus module" on AliExpress/Amazon. SPI to the Pi. | $5 |
 
-The `Hal.CANBus` spec stays the same. Only `hal_pi/hal-canbus.adb` is
-rewritten. No application code changes.
+The application-facing API can stay stable; only the `src/` CAN driver
+implementation changes.
 
 ---
 

@@ -1,3 +1,43 @@
+# Pi 4 firmware configuration
 arm_64bit=1
 kernel=kernel8.img
+
+# GPU memory for framebuffer / mailbox alloc (MiB). Too low → alloc fails → rainbow.
+gpu_mem=128
+
+# UART debug on GPIO 14/15 (mini-UART)
 enable_uart=1
+
+# Legacy mailbox framebuffer: avoid firmware KMS “video bridge” owning the pipe
+# while ARM fills the BO — symptom is mailbox OK but HDMI stays black.
+disable_fw_kmsvb=1
+
+# Rainbow stuck / EDID issues: force Pi-standard 640x480 — matches mailbox
+# resolution requested via mailbox / constants in Ada). Comment out when tuning
+# a known-good hdmi_cvt block for your panel.
+hdmi_safe=1
+
+# Firmware rainbow splash (GPU test pattern): hide so a stuck boot reads as
+# black until our framebuffer paints (easier to interpret HDMI).
+disable_splash=1
+
+# HDMI: be generous with defaults so the first power-on shows pixels
+# even if the screen doesn't strongly assert EDID over the cable.
+hdmi_force_hotplug=1
+hdmi_drive=2
+disable_overscan=1
+
+# For Waveshare 10.1" 1024x600 panel, uncomment:
+# hdmi_group=2
+# hdmi_mode=87
+# hdmi_cvt=1024 600 60 6 0 0 0
+
+# For a 1280x800 panel, uncomment:
+# hdmi_group=2
+# hdmi_mode=87
+# hdmi_cvt=1280 800 60 3 0 0 0
+
+# For a 7" 800x480 panel, uncomment:
+# hdmi_group=2
+# hdmi_mode=87
+# hdmi_cvt=800 480 60 6 0 0 0

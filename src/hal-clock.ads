@@ -1,8 +1,4 @@
---  hal-clock.ads — Microsecond timer abstraction
---
---  All implementations expose a 1 MHz monotonic counter:
---    Pi/QEMU:  BCM2711 system timer at 0xFE003004
---    Sim:      clock_gettime(CLOCK_MONOTONIC) scaled to microseconds
+--  hal-clock.ads — Microsecond timer (Pi: CNTFRQ_EL0 / CNTPCT_EL0; CLO fallback)
 
 with Hal; use Hal;
 
