@@ -15,14 +15,21 @@ package Hal.Display is
    Magenta : constant Color := 16#00FF_00FF#;
    Yellow  : constant Color := 16#00FF_FF00#;
 
-   --  Requested mode (must match config.txt / firmware timing hints).
-   Width  : constant := 640;
+   --  Requested mode — must match config.txt hdmi_cvt / hdmi_mode. Actual scan-out
+   --  may differ slightly; use Last_Phys_* after Init for layout (screen_background).
+   Width  : constant := 800;
    Height : constant := 480;
 
    function Init return Boolean;
 
    procedure Fill (C : Color);
    procedure Put_Pixel (X, Y : U32; C : Color);
+
+   --  Axis-aligned rectangle (clipped to the framebuffer).
+   procedure Fill_Rect (X, Y, W, H : U32; C : Color);
+
+   --  Outlined rectangle, thickness T ≥ 1 (clipped).
+   procedure Frame_Rect (X, Y, W, H : U32; C : Color; Thickness : U32 := 1);
 
    --  Drain CPU write buffers before scan-out reads framebuffer RAM.
    procedure Flush;

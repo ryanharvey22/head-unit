@@ -29,6 +29,8 @@ ADA_OBJS := \
    $(BUILD_DIR)/hal-uart.o \
    $(BUILD_DIR)/hal-display.o \
    $(BUILD_DIR)/hal-clock.o \
+   $(BUILD_DIR)/gfx_font.o \
+   $(BUILD_DIR)/screen_background.o \
    $(BUILD_DIR)/head_unit_main.o \
    $(BUILD_DIR)/main.o
 

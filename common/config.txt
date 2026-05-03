@@ -12,10 +12,12 @@ enable_uart=1
 # while ARM fills the BO — symptom is mailbox OK but HDMI stays black.
 disable_fw_kmsvb=1
 
-# Rainbow stuck / EDID issues: force Pi-standard 640x480 — matches mailbox
-# resolution requested via mailbox / constants in Ada). Comment out when tuning
-# a known-good hdmi_cvt block for your panel.
-hdmi_safe=1
+# Framebuffer + HDMI: 800×480 @ 60 Hz — common HDMI LCD size; multiple of 16 for GPU.
+# Matches Ada Hal.Display Width/Height. Aspect flag 6 matches many 800×480 boards.
+hdmi_safe=0
+hdmi_group=2
+hdmi_mode=87
+hdmi_cvt=800 480 60 6 0 0 0
 
 # Firmware rainbow splash (GPU test pattern): hide so a stuck boot reads as
 # black until our framebuffer paints (easier to interpret HDMI).
@@ -25,7 +27,13 @@ disable_splash=1
 # even if the screen doesn't strongly assert EDID over the cable.
 hdmi_force_hotplug=1
 hdmi_drive=2
+
+# No overscan margin — avoid black bands inside the bezel on many TVs.
 disable_overscan=1
+overscan_left=0
+overscan_right=0
+overscan_top=0
+overscan_bottom=0
 
 # For Waveshare 10.1" 1024x600 panel, uncomment:
 # hdmi_group=2

@@ -25,7 +25,7 @@ references — firmware UI code will live alongside other Ada sources in `src/`.
 - Dividers: `#1F2630`
 
 **Typography:**
-- Numerals: heavy geometric monospace (JetBrains Mono Bold feel)
+- Numerals: heavy geometric monospace (JetBrains Mono Bold feel — **reference only**; firmware uses a small bitmap font; see repo [**CREDITS.md**](../CREDITS.md))
 - Labels: small sans-serif ALL CAPS with wide letterspacing
 
 **Composition:**

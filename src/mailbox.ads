@@ -1,6 +1,7 @@
 --  mailbox.ads — VideoCore mailbox property channel 8 (Pi 4)
 --
 --  https://github.com/raspberrypi/firmware/wiki/Mailbox-property-interface
+--  Broader credits: repo-root CREDITS.md.
 
 with Hal; use Hal;
 

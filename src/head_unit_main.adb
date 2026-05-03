@@ -11,6 +11,7 @@ with Hal.Display;
 with Hal.GPIO;
 with Hal.UART;
 with Mailbox;
+with Screen_Background;
 
 package body Head_Unit_Main is
 
@@ -45,9 +46,7 @@ package body Head_Unit_Main is
 
       Ok := Hal.Display.Init;
       if Ok then
-         --  Obvious solid (XRGB magenta); Screen_Background is nearly black on HDMI.
-         Hal.Display.Fill (Hal.Display.Magenta);
-         Hal.Display.Flush;
+         Screen_Background.Draw_Home_Mockup;
       end if;
 
       Hal.UART.Init;

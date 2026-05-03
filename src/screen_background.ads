@@ -1,30 +1,41 @@
---  screen_background.ads — What we paint before real UI (v1 palette)
+--  screen_background — Static home mockup chrome (design_concepts/head_unit_mockup_home.png).
 --
---  Hex colors match design_concepts/README.md “Color palette”.  Values are
---  XRGB (`16#00RRGGBB#`); pass to Hal.Display as Hal.Display.Color (...).
+--  Colors follow design_concepts/README.md palette; layout scales with Hal.Display Width×Height.
+--  Attribution: CREDITS.md (UI palette / font).
 
-with Hal; use Hal;
+with Hal;
 
 package Screen_Background is
 
-   pragma Pure;
+   type Tile_Id is (Top_Status, Left_Speed, Right_Diagnostics, Bottom_Trip);
 
-   --  Base canvas
-   Background   : constant U32 := 16#000A_0E13#;   --  #0A0E13
-   Topo_Overlay : constant U32 := 16#0013_181F#;   --  #13181F contour layer
+   type Region is record
+      X, Y, W, H : Hal.U32;
+   end record;
 
-   --  Typography / chrome (for future text and chrome drawing)
-   Primary_Text : constant U32 := 16#00ED_E8DC#;   --  #EDE8DC
-   Accent       : constant U32 := 16#00C9_A961#;   --  #C9A961
-   Status_OK    : constant U32 := 16#007B_8B5C#;   --  #7B8B5C
-   Divider      : constant U32 := 16#001F_2630#;   --  #1F2630
+   function Tile (Id : Tile_Id) return Region;
 
-   --  Alerts
-   Alert_Warning  : constant U32 := 16#00D0_4545#;   --  #D04545
-   Alert_Critical : constant U32 := 16#00FF_6B5A#;   --  #FF6B5A
-   Alert_Tint     : constant U32 := 16#0015_080A#;   --  #15080A
+   subtype Diag_Row_Index is Natural range 0 .. 4;
 
-   --  Full-screen fill used right after display init until pages draw regions.
-   Boot_Fill : constant U32 := Background;
+   --  Row bands inside Right_Diagnostics (for future RPM / coolant / fuel / batt / oil).
+   function Diag_Row (Row : Diag_Row_Index) return Region;
+
+   --  Full layout: background, tile frames, corner brackets, diag dividers, gauge stubs.
+   procedure Draw_Home_Mockup;
+
+   --  --- Palette (XRGB) ---------------------------------------------------------
+
+   Background     : constant Hal.U32 := 16#000A_0E13#;
+   Topo_Overlay   : constant Hal.U32 := 16#0013_181F#;
+   Primary_Text   : constant Hal.U32 := 16#00ED_E8DC#;
+   Accent         : constant Hal.U32 := 16#00C9_A961#;
+   Status_OK      : constant Hal.U32 := 16#007B_8B5C#;
+   Divider        : constant Hal.U32 := 16#001F_2630#;
+   Alert_Warning  : constant Hal.U32 := 16#00D0_4545#;
+   Alert_Critical : constant Hal.U32 := 16#00FF_6B5A#;
+   Alert_Tint     : constant Hal.U32 := 16#0015_080A#;
+   Tile_Interior  : constant Hal.U32 := 16#000C_1018#;
+
+   Boot_Fill : constant Hal.U32 := Background;
 
 end Screen_Background;

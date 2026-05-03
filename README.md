@@ -28,6 +28,8 @@ First-time SD setup: put Pi 4 firmware files on the FAT partition (`bootcode.bin
 `start4.elf`, `fixup4.dat`, `bcm2711-rpi-4-b.dtb`). If they are missing,
 `FETCH_FIRMWARE=1 ./tools/flash_sd.sh` downloads them.
 
+[`common/config.txt`](common/config.txt) sets **800×480** HDMI with **overscan off**, matching [`Hal.Display`](src/hal-display.ads). Layout uses **GPU-reported** `Last_Phys_*` after init so drawing matches the real framebuffer width (avoids left gap / right clipping when firmware snaps size). For **1024×600** or **1280×720** panels, use a commented **`hdmi_cvt`** block and the same **Width**/**Height** in Ada.
+
 Default firmware behavior: [`Head_Unit_Main.Run`](src/head_unit_main.adb) idle
 loops using [`Hal.Clock.Wait_Ms`](src/hal-clock.adb). Add UART, mailbox
 framebuffer, and drivers in `src/` as you implement them.
@@ -43,3 +45,7 @@ framebuffer, and drivers in `src/` as you implement them.
 
 [`common/boot.S`](common/boot.S) enters AArch64 from firmware with EL-aware setup;
 [`common/linker.ld`](common/linker.ld) places the stack at `__stack_top`.
+
+## Credits
+
+Documentation influences, font lineage, and trademark notes are listed in [**CREDITS.md**](CREDITS.md).

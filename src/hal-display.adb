@@ -1,5 +1,8 @@
 --  hal-display.adb — Mailbox framebuffer (property tags per firmware wiki +
 --  rockytriton part14-style sequence: alpha ignored, blank off, allocate, pitch).
+--
+--  References: https://github.com/raspberrypi/firmware/wiki/Mailbox-property-interface
+--  and rockytriton LLD rpi_bm/part14 — see CREDITS.md.
 
 with Interfaces; use Interfaces;
 with System.Machine_Code;
@@ -118,9 +121,8 @@ package body Hal.Display is
       --  Get pitch (0x00040008)
       M (38) := 16#0004_0008#;
       M (39) := 4;
-      M (40) := 0;
+      M (40) := 4;
       M (41) := 0;
-
       M (42) := 0;
 
       Last_PW := 0;
@@ -212,6 +214,70 @@ package body Hal.Display is
          Addr := Addr + Storage_Offset (Pitch);
       end loop;
    end Fill;
+
+   procedure Fill_Rect (X, Y, W, H : U32; C : Color) is
+      X0    : U32;
+      Y0    : U32;
+      X1    : U32;
+      Y1    : U32;
+      Row   : System.Address;
+      XX    : U32;
+   begin
+      if FB_Base = System.Null_Address or else W = 0 or else H = 0 then
+         return;
+      end if;
+      if X >= Last_PW or else Y >= Last_PH then
+         return;
+      end if;
+
+      X0 := X;
+      Y0 := Y;
+      X1 := X + W - 1;
+      Y1 := Y + H - 1;
+      if X1 >= Last_PW then
+         X1 := Last_PW - 1;
+      end if;
+      if Y1 >= Last_PH then
+         Y1 := Last_PH - 1;
+      end if;
+
+      Y0 := Y;
+      while Y0 <= Y1 loop
+         Row := FB_Base + Storage_Offset (Integer_Address (Y0 * Pitch + X0 * 4));
+         XX := X0;
+         while XX <= X1 loop
+            declare
+               Pixel : Color;
+               for Pixel'Address use Row + Storage_Offset (Integer_Address ((XX - X0) * 4));
+               pragma Volatile (Pixel);
+               pragma Import (Ada, Pixel);
+            begin
+               Pixel := C;
+            end;
+            XX := XX + 1;
+         end loop;
+         Y0 := Y0 + 1;
+      end loop;
+   end Fill_Rect;
+
+   procedure Frame_Rect (X, Y, W, H : U32; C : Color; Thickness : U32 := 1) is
+      T : U32 := Thickness;
+   begin
+      if T = 0 then
+         T := 1;
+      end if;
+      if W = 0 or else H = 0 then
+         return;
+      end if;
+      Fill_Rect (X, Y, W, T, C);
+      if H > T then
+         Fill_Rect (X, Y + H - T, W, T, C);
+      end if;
+      if H > 2 * T then
+         Fill_Rect (X, Y + T, T, H - 2 * T, C);
+         Fill_Rect (X + W - T, Y + T, T, H - 2 * T, C);
+      end if;
+   end Frame_Rect;
 
    procedure Flush is
    begin
