@@ -9,7 +9,7 @@ mockups live under `design_concepts/`.
 ## Repo layout
 
 ```
-src/           All Ada sources (specs + bodies)
+src/           Ada sources; `screen_background.ads` = v1 on-screen palette
 common/        boot.S, linker.ld, config.txt, runtime.c (memset/memcpy/…)
 tools/         flash_sd.sh — build + copy to SD card
 design_concepts/  UI mockups (reference only)

@@ -24,6 +24,10 @@ CFLAGS   := -ffreestanding -nostdlib -nostartfiles -O2 -fno-builtin
 INCLUDES := -I$(SRC_DIR)
 
 ADA_OBJS := \
+   $(BUILD_DIR)/mailbox.o \
+   $(BUILD_DIR)/hal-gpio.o \
+   $(BUILD_DIR)/hal-uart.o \
+   $(BUILD_DIR)/hal-display.o \
    $(BUILD_DIR)/hal-clock.o \
    $(BUILD_DIR)/head_unit_main.o \
    $(BUILD_DIR)/main.o

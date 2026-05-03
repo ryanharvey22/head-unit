@@ -109,4 +109,11 @@ package body Hal.Clock is
       Wait_Us (Ms * 1000);
    end Wait_Ms;
 
+   procedure Busy_Wait_Loops (Iterations : Natural) is
+   begin
+      for I in 1 .. Iterations loop
+         System.Machine_Code.Asm ("nop", Volatile => True);
+      end loop;
+   end Busy_Wait_Loops;
+
 end Hal.Clock;

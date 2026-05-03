@@ -14,4 +14,7 @@ package Hal.Clock is
    --  Convenience: wait for milliseconds.
    procedure Wait_Ms (Ms : U32);
 
+   --  Busy wait using NOPs only — does not use CNTPCT/CLO (bring-up if Wait_* stalls).
+   procedure Busy_Wait_Loops (Iterations : Natural);
+
 end Hal.Clock;
